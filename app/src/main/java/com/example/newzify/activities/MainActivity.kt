@@ -1,33 +1,34 @@
 package com.example.newzify.activities
-
-import android.app.SearchManager
-import android.content.Context
+import adapter.adapter
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.widget.SearchView
+import android.view.View
+import android.widget.ListView
+import android.widget.ProgressBar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.fragment.app.Fragment
-import com.example.newzify.fragments.FavoritesFragment
-import com.example.newzify.fragments.HomeViewFragment
-import com.example.newzify.fragments.DownloadFragment
+
+
 import com.example.newzify.R
-import com.example.newzify.fragments.BussinessFragment
-import com.example.newzify.fragments.PoliticsFragment
-import com.example.newzify.fragments.ProfileFragment
-import com.example.newzify.fragments.SettingsFragment
-import com.example.newzify.fragments.SportsFragment
-import com.example.newzify.fragments.TechnologyFragment
+
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.chip.Chip
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.chip.ChipGroup
+import models.NewsResponse
+
+import org.json.JSONArray
+import retrofit.Call
+import retrofit.Callback
+import retrofit.Response
+import retrofit.Retrofit
+import retrofitInstance
 
 class MainActivity : AppCompatActivity() {
-
+    private lateinit var listView: ListView
+    private lateinit var progressBar:ProgressBar
+    private val apiKey = "80d514e546fa4f38a32e965345df7ea2"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,87 +41,64 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-
         var chipPolitics = findViewById<Chip>(R.id.politics_chip)
         var chipTechnologies = findViewById<Chip>(R.id.technologies_chip)
         var chipSports = findViewById<Chip>(R.id.sports_chip)
         var chipBusiness = findViewById<Chip>(R.id.bussiness_chip)
 
+        listView = findViewById(R.id.news_feed_frame)
+        progressBar = findViewById<ProgressBar>(R.id.progressBar)
         val toolbar: MaterialToolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
+        chipPolitics.setOnClickListener({
+            fetchNews("health")
+        })
+        chipSports.setOnClickListener({
+            fetchNews("Sports")
+        })
+        chipBusiness.setOnClickListener({
+            fetchNews("business")
 
-        // Load the home view by default
-        if (savedInstanceState == null) {
-            loadHomeView()
-        }
+        })
+        chipTechnologies.setOnClickListener({
+            fetchNews("technology")
+        })
 
-        chipPolitics.setOnClickListener{
-            loadFragment(PoliticsFragment())
-        }
-        chipTechnologies.setOnClickListener{
-            loadFragment(TechnologyFragment())
-        }
-        chipSports.setOnClickListener{
-            loadFragment(SportsFragment())
-        }
-        chipBusiness.setOnClickListener{
-            loadFragment(BussinessFragment())
-        }
+        // Load initial news
+        fetchNews("business")
 
-        // Bottom Navigation handling
-        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-        bottomNavigationView.setOnNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_home -> {
-                    loadHomeView() // Load Home view
-                    true
+        // Change category based on Chip selection
+
+    }
+
+    private fun fetchNews(category: String) {
+        retrofitInstance.api.getTopHeadlines(
+            country = "us",
+            category = category,
+            apiKey = apiKey
+        ).enqueue(object : Callback<NewsResponse> {
+            override fun onResponse(response: Response<NewsResponse>?, retrofit: Retrofit?) {
+                if (response != null) {
+                    if (response.isSuccess) {
+                        val newsResponse = response.body()
+                        newsResponse?.articles?.let {
+                            // Set the news articles in the ListView
+                            val adapter = adapter(this@MainActivity, it)
+                            listView.adapter = adapter
+                        }
+                    } else {
+                        Log.e("API Error", "Response Code: ${response.code()}")
+                    }
                 }
-                R.id.nav_favorites -> {
-                    loadFragment(FavoritesFragment())
-                    true
-                }
-                R.id.nav_profile -> {
-                    loadFragment(ProfileFragment())
-                    true
-                }
-                R.id.nav_download -> {
-                    loadFragment(DownloadFragment())
-                    true
-                }
-                else -> false
             }
-        }
+
+            override fun onFailure(t: Throwable?) {
+                progressBar.visibility = View.GONE
+                if (t != null) {
+                    Log.e("API Failure", "Error: ${t.message}")
+                }
+            }
+        })
     }
-
-    // Function to load the home view (FrameLayout)
-    private fun loadHomeView() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.news_feed_frame, HomeViewFragment()) // A fragment that displays the home layout
-            .commit()
-    }
-
-    // Function to load a fragment
-    private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.news_feed_frame, fragment) // Replace the FrameLayout with the selected fragment
-            .commit()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.toolbar_menu, menu)
-
-        val searchItem = menu?.findItem(R.id.action_search)
-        val searchView = searchItem?.actionView as? SearchView
-
-        if (searchView != null) {
-            val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
-        }
-        return true
-    }
-
-
-
 
 }

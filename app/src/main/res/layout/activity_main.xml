@@ -20,6 +20,17 @@
         app:menu="@menu/toolbar_menu"
         app:title="Newzify" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/bottom_navigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/news_feed_frame"
+        app:layout_constraintTop_toTopOf="@+id/toolbar" />
+
 
 
     <!-- FrameLayout for the News Feed (dynamic content) -->
@@ -38,18 +49,21 @@
             android:id="@+id/category_chips"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="@color/cardview_shadow_start_color"
             android:padding="8dp"
-            app:chipSpacing="8dp"
+            app:chipSpacing="15dp"
             app:singleSelection="true">
 
             <!-- Example Chips for categories -->
             <com.google.android.material.chip.Chip
                 android:id="@+id/politics_chip"
+                android:textSize="16dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Politics" />
+                android:text="Health" />
 
             <com.google.android.material.chip.Chip
+                android:textSize="16dp"
                 android:id="@+id/technologies_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -59,28 +73,32 @@
                 android:id="@+id/sports_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sports" />
+                android:text="Sports"
+                android:textSize="16dp" />
 
             <com.google.android.material.chip.Chip
+                android:textSize="16dp"
                 android:id="@+id/bussiness_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Business" />
         </com.google.android.material.chip.ChipGroup>
+
     </HorizontalScrollView>
 
-    <FrameLayout
+
+    <ListView
         android:id="@+id/news_feed_frame"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:padding="8dp"
+        android:dividerHeight="10dp"
         android:background="@color/white"
         app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/horizontalScrollView">
-
-    </FrameLayout>
+    </ListView>
 
     <!-- Bottom Navigation Bar -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
