@@ -1,3 +1,4 @@
+
 # Newzify
 
 Newzify is a simple news reading app built in Kotlin for Android.  
